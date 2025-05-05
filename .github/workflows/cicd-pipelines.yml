@@ -1,4 +1,5 @@
-name: CICD Database Dev to Prod Missing  property "jobs"
+name: CICD Database Dev to Prod
+
 on:
   push:
     branches:
@@ -6,7 +7,7 @@ on:
 
 jobs:
   db_cicd:
-  name: Database CI/CD Pipeline
+    name: Database CI/CD Pipeline
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -19,4 +20,4 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-          echo "Berhasil konek ke server"
+            echo "Berhasil konek ke server"
