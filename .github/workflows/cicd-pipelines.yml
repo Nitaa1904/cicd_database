@@ -24,3 +24,10 @@ jobs:
             cd /home/cicd
             sudo docker compose up -d
             echo "Berhasil menjalankan docker-compose up -d"
+
+            # CI (Continuous Integration) untuk menunggu Database
+            echo "Menunggu Server MySQL siap"
+            sleep 30 # Tunggu 30 detik untuk memastikan semua service siap
+
+            docker exec mysql_devel_container mysql -u root -pTelkom123! -e "SHOW DATABASES;"
+            echo "Berhasil menampilkan database di mysql_devel_container"
