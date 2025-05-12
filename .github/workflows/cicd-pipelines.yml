@@ -20,26 +20,27 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-            echo "Berhasil konek ke server"
-            cd /home/cicd
-            sudo docker compose up -d
-            echo "Berhasil menjalankan docker-compose up -d"
+            echo "✅ Berhasil konek ke server"
 
-            # CI (Continuous Integration) untuk menunggu Database
-            echo "Menunggu Server MySQL siap"
-            sleep 30 # Tunggu 30 detik untuk memastikan semua service siap
+            cd /home/cicd
+            docker compose up -d
+            echo "✅ Berhasil menjalankan docker-compose up -d"
+
+            # CI (Continuous Integration)
+            echo "⏳ Menunggu Server MySQL siap"
+            sleep 30
 
             docker exec mysql_devel_container mysql -u root -pTelkom123! -e "SHOW DATABASES;"
-            echo "Berhasil menampilkan database di mysql_devel_container"
+            echo "✅ Berhasil menampilkan database di mysql_devel_container"
 
-            #CD (Continuous Deployment) untuk Database
-            echo "DUMP Database dari mysql_devel_container"
-            docker exec mysql_devel_container sh -c 'mysqldump -u root -pTelkom123! academics_devel' > dump_devel.sql
+            # CD (Continuous Deployment)
+            echo "📦 Dump database dari mysql_devel_container"
+            docker exec mysql_devel_container sh -c 'mysqldump -u root -pTelkom123! academics_devel' > /tmp/dump_devel.sql
 
-            echo "Copy dump ke mysql_prod..."
-            docker cp dump.sql mysql_prod_container:/tap/dump_devel.sql
+            echo "📂 Copy dump ke mysql_prod_container"
+            docker cp /tmp/dump_devel.sql mysql_prod_container:/tap/dump_devel.sql
 
-            echo "Import dump ke mysql_prod..."
+            echo "📥 Import dump ke mysql_prod_container"
             docker exec -i mysql_prod_container sh -c 'mysql -u root -pTelkom123! academics < /tap/dump_devel.sql'
 
-            echo "Berhasil mengimpor database ke mysql_prod_container"
+            echo "✅ Berhasil mengimpor database ke mysql_prod_container"
