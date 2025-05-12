@@ -10,45 +10,36 @@ jobs:
     name: Database CI/CD Pipeline
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: SSH to Database Server & Run CI/CD Commands
+      - name: SSH Connect to Database Server
         uses: appleboy/ssh-action@v0.1.0
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-            set -e
-            echo "✅ Berhasil konek ke server"
-
-            # Masuk ke direktori project
+            echo "Berhasil konek ke server"
             cd /home/cicd
+            sudo docker compose up -d
+            echo "Berhasil menjalankan docker-compose up -d"
 
-            # Jalankan docker compose tanpa sudo
-            docker compose up -d
-            echo "🐳 docker compose up -d selesai"
+            # CI (Continuous Integration) untuk menunggu Database
+            echo "Menunggu Server MySQL siap"
+            sleep 30 # Tunggu 30 detik untuk memastikan semua service siap
 
-            # Tunggu service MySQL siap
-            echo "⏳ Menunggu Server MySQL siap..."
-            sleep 30
+            docker exec mysql_devel_container mysql -u root -pTelkom123! -e "SHOW DATABASES;"
+            echo "Berhasil menampilkan database di mysql_devel_container"
 
-            # Cek koneksi ke MySQL di container development
-            docker exec mysql_devel_container mysql -u root -p${{ secrets.MYSQL_PASSWORD }} -e "SHOW DATABASES;"
-            echo "✅ Berhasil menampilkan database di mysql_devel_container"
+            #CD (Continuous Deployment) untuk Database
+            echo "DUMP Database dari mysql_devel_container"
+            docker exec mysql_devel_container sh -c 'mysqldump -u root -pTelkom123! academics_devel' > dump_devel.sql
 
-            # Dump database dari development container
-            echo "📤 Dump database academics_devel"
-            docker exec mysql_devel_container sh -c 'mysqldump -u root -p${{ secrets.MYSQL_PASSWORD }} academics_devel' > dump_devel.sql
+            echo "Copy dump ke mysql_prod..."
+            docker cp dump.sql mysql_prod_container:/tap/dump_devel.sql
 
-            # Pastikan folder tujuan ada di production container
-            docker exec mysql_prod_container mkdir -p /tap
+            echo "Import dump ke mysql_prod..."
+            docker exec -i mysql_prod_container sh -c 'mysql -u root -pTelkom123! academics < /tap/dump_devel.sql'
 
-            # Copy file dump ke production container
-            docker cp dump_devel.sql mysql_prod_container:/tap/dump_devel.sql
-            echo "📦 Dump berhasil disalin ke mysql_prod_container"
-
-            # Import ke database production
-            docker exec -i mysql_prod_container sh -c 'mysql -u root -p${{ secrets.MYSQL_PASSWORD }} academics < /tap/dump_devel.sql'
-            echo "✅ Berhasil mengimpor database ke mysql_prod_container"
+            echo "Berhasil mengimpor database ke mysql_prod_container"
