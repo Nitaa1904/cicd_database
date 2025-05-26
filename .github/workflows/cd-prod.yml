@@ -19,14 +19,23 @@ deploy:
         port: 22
         script: |
           echo "Berhasil Konek ke Server"
-          echo "Masuk dulu ke Folder YIS"
-          cd /home/cicd
-          echo "Berhasil Masuk ke Folder YIS"
+              if [ -d "/home/cicd" ]; then
+                echo "Ada folder YIS"
+                cd /home/cicd
+                echo "Berhasil Masuk ke Folder YIS"
+              else
+                echo "Gak ada folder YIS, membuat folder..."
+                mkdir /home/cicd
+                cd /home/cicd
+              fi
 
-          echo "Mengecek apakah ini adalah git repository"
-          if [ -d ".git" ]; then
-            echo "Ada git repository"
-            git pull origin main # Update repository ke branch main
-          else
-            echo "Gak ada git repository"
-            git clone
+              if [ -d ".git" ]; then
+                echo "Ada folder .git, melakukan git pull..."
+                git remote set-url origin https://${{ secrets.GIT_USERNAME }}:${{ secrets.GIT_PAT }}@github.com/${{ secrets.GIT_USERNAME }}/cicd_database_example.git
+                git pull origin main
+              else
+                echo "Gak ada folder .git, melakukan git clone..."
+                git clone https://${{ secrets.GIT_USERNAME }}:${{ secrets.GIT_PAT }}@github.com/${{ secrets.GIT_USERNAME }}/cicd_database_example.git .
+              fi
+
+              echo "Berhasil Deploy ke Server"
