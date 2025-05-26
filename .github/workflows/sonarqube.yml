@@ -7,11 +7,13 @@ on:
 
 jobs:
   sonar:
-    name: Anaylze code with SonarQube
+    name: Analyze code with SonarQube
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Important for better relevancy of analysis
 
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -27,10 +29,13 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: Build and analyze with SonarQube
-        working-directory: sample-ci-testing # Masuk ke dalam folder sample-ci-testing
+        working-directory: sample-ci-testing
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           mvn clean verify sonar:sonar \
           -Dsonar.projectKey=sample-ci-testing_yis \
-          -Dsonar.host.url=http://202.43.248.139:9000 \
-          -Dsonar.login=${{ secrets.SONAR_SERVER_TOKEN }} \
+          -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
           -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
