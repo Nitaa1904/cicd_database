@@ -21,7 +21,7 @@ jobs:
           script: |
             echo "Berhasil Konek ke Server"
             echo "Masuk dulu ke Folder"
-            cd //home/cicd
+            cd /home/cicd
             echo "Berhasil Masuk ke Folder"
 
             echo "Mengecek apakah ini adalah git repository"
@@ -30,7 +30,6 @@ jobs:
               git pull origin main # Update repository ke branch main
             else
               echo "Gak ada git repository"
-              git clone https://github.com/yudhaislamisulistya/cicd_database_example .
             fi
 
             echo "Berhasil Update Repository"

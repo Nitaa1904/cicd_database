@@ -20,7 +20,7 @@ deploy:
         script: |
           echo "Berhasil Konek ke Server"
           echo "Masuk dulu ke Folder YIS"
-          cd /home/yis
+          cd /home/cicd
           echo "Berhasil Masuk ke Folder YIS"
 
           echo "Mengecek apakah ini adalah git repository"
